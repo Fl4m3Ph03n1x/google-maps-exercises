@@ -1,0 +1,16 @@
+{
+  "name": "exercise_5.3",
+  "version": "1.0.0",
+  "description": "Create a simple JavaScript app that allows to enter two addresses and displays all available routes from A to B, highlighting the fastest and shortest ones in different colors.",
+  "main": "index.js",
+  "scripts": {
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js *.js",
+    "watch": "gulp watch"
+  },
+  "author": "Pedro Miguel Pereira Serrano Martins",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc": "^3.4.0"
+  }
+}

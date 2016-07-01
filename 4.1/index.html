@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+	<meta charset="utf-8">
+	<title>Simple markers</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+	<div id="floating-panel">
+		<input onclick="hideAllMarkers();" type=button value="Hide Markers">
+		<input onclick="showAllMarkers();" type=button value="Show All Markers">
+		<input onclick="deleteAllMarkers();" type=button value="Delete Markers">
+	</div>
+	<div id="map"></div>
+	<script type="text/javascript" src="PrivateNameSpace.js"></script>
+	<script type="text/javascript" src="MarkerTracker.js"></script>
+	<script type="text/javascript" src="MarkerLabelLib.js"></script>
+	<script type="text/javascript" src="example.js"></script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGj-Dsa4PtrJiyATE_upQgOkfEkjFXqoQ&callback=initMap">
+	</script>
+
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "exercise_4.3",
+  "version": "1.0.0",
+  "description": "Extend previous app so that clicking on each result marker will open an InfoWindow that will display the following details: result location, location type, formatted address and address types.",
+  "main": "index.js",
+  "scripts": {
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js *.js",
+    "watch": "gulp watch"
+  },
+  "author": "Pedro Miguel Pereira Serrano Martins",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc": "^3.4.0"
+  }
+}

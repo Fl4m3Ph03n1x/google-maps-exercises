@@ -1,0 +1,16 @@
+{
+  "name": "exercise_4.4",
+  "version": "1.0.0",
+  "description": "Extend previous app to add a button inside each result InfoWindow to do a reverse geocoding of the original result's location (LatLng), populate InfoWindow details with those from the first (reverse geocoding) result.",
+  "main": "index.js",
+  "scripts": {
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js *.js",
+    "watch": "gulp watch"
+  },
+  "author": "Pedro Miguel Pereira Serrano Martins",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc": "^3.4.0"
+  }
+}

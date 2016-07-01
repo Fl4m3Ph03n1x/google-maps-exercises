@@ -1,0 +1,16 @@
+{
+  "name": "exercise_4.5",
+  "version": "1.0.0",
+  "description": "Extend previous app to add a button inside each result InfoWindow to switch to the hybrid map type and zoom in on the marker location, at the maximum zoom level we have satellite imagery for.",
+  "main": "index.js",
+  "scripts": {
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js *.js",
+    "watch": "gulp watch"
+  },
+  "author": "Pedro Miguel Pereira Serrano Martins",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc": "^3.4.0"
+  }
+}

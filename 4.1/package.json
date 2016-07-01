@@ -1,0 +1,14 @@
+{
+  "name": "exercise_4.1",
+  "version": "1.0.0",
+  "description": "Create a simple app that allows to add markers by clicking on the map, open an InfoWindow upon click and delete them with a link or button in the InfoWindow.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pedro Miguel Pereira Serrano Martins",
+  "license": "ISC",
+  "dependencies": {
+    "jsdoc": "^3.4.0"
+  }
+}

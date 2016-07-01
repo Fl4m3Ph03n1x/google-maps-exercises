@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: example.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: example.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @author  Pedro Miguel Pereira Serrano Martins
+ * @version 1.0.0
+ * @date    28 June, 2016
+ */
+
+'use strict';
+
+/*global google*/
+/*global MarkerTracker*/
+/*global MarkerLabelLib*/
+
+/**
+ * @global 
+ * @description The global map varaible representing the map instance of this demo.
+ */
+var map;
+
+/**
+ * @global 
+ * @description Instance of the MarkerTracker library, needed to track markers and their statuses.
+ */
+var markerLib;
+
+/**
+ * @global 
+ * @description Instance of the MarkerLabelLib, needed to keep track of the labels being using in each marker.
+ */
+var markerLabels;
+
+/**
+ * @const
+ * @type		{Number}
+ * @default
+ * @description	Default zoom level used in in the start of the map.
+ */
+const INITIAL_ZOOM = 4;
+
+/**
+ * @const
+ * @type		{Location}
+ * @default
+ * @description	Australia's location in latitude and longitude.
+ */
+const AUSTRALIA_LOC = {lat: -25.363, lng: 131.044};
+
+/**
+ * @function initMap
+ * @description Initializes the and the libraries.
+ */
+function initMap() {
+
+	markerLib = new MarkerTracker();
+	markerLabels = new MarkerLabelLib(MarkerLabelLib.GREEK_ALPHABET, true);
+
+	map = new google.maps.Map(document.getElementById('map'), {
+		zoom: INITIAL_ZOOM,
+		center: AUSTRALIA_LOC
+	});
+	
+	initSearchBox(map);
+}
+
+//global buttons
+/**
+ * @function	hideAllMarkers
+ * @description	Hides all the markers currently being tracked by MarkerTracker from the maps they are in. Activated once the "Hide Markers" button in the UI is clicked.
+ */
+function hideAllMarkers() {
+	var markers = markerLib.getIterator();
+	for (var marker of markers) {
+		marker.setMap(null);
+	}
+}
+
+/**
+ * @function	showAllMarkers
+ * @description Shows all the markers currently tracked by MarkerTracker that are hidden and restores their animations. Activated once the "Show all Markers" button in the UI is clicked.
+ */
+function showAllMarkers() {
+	var markers = markerLib.getIterator();
+	for (var marker of markers) {
+		marker.setMap(map);
+
+		if (markerLib.getMarkerInfo(marker).isBouncing)
+			marker.setAnimation(google.maps.Animation.BOUNCE);
+	}
+
+}
+
+/**
+ * @function	deleteAllMarkers
+ * @description	Deletes all the markers currently being tracked by MarkerTracker from the maps they are in. Activated once the "Delete Markers" button is clicked. 
+ */
+function deleteAllMarkers() {
+	markerLib.reset();
+	markerLabels.reset(true);
+}
+
+//searchbox
+/**
+ * @function	initSearchBox
+ * @description Function containing the initilization of the searchbox together with the listeners it uses.
+ */
+function initSearchBox() {
+	// Create the search box and link it to the UI element.
+	let input = document.getElementById('pac-input');
+	let searchBox = new google.maps.places.SearchBox(input);
+	// map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+	// Bias the SearchBox results towards current map's viewport.
+	map.addListener('bounds_changed', function() {
+		searchBox.setBounds(map.getBounds());
+	});
+
+	searchBox.addListener('places_changed', function() {
+
+		deleteAllMarkers();
+
+		let places = searchBox.getPlaces();
+		if (places.length == 0) {
+			return;
+		}
+
+		// For each place, get the icon, name and location.
+		let bounds = new google.maps.LatLngBounds();
+		places.forEach(function(place) {
+
+			// // Create a marker for each place.
+			let newMarker = createMarker(place.geometry.location, place.name, markerLabels.nextSymbol(), true);
+			markerLib.trackMarker(newMarker);
+
+			newMarker.setMap(map);
+
+			if (place.geometry.viewport) {
+				// Only geocodes have viewport.
+				bounds.union(place.geometry.viewport);
+			}
+			else {
+				bounds.extend(place.geometry.location);
+			}
+		});
+		map.fitBounds(bounds);
+	});
+}
+
+//Auxiliary functions 
+
+/**
+ * @function	createMarker
+ * @description Creates and returns a marker with the given parameters. Depends on the global variable &lt;code>map&lt;/code>.
+ * @param		{Location}	aPosition		The Position object (containing a &lt;code>lat&lt;/code> and &lt;code>lng&lt;/code> properties) with the coordinates of the marker.
+ * @param		{String}	aTitle			The title of the marker. 
+ * @param		{Char}		aLabel			&lt;b>OPTIONAL&lt;/b>, The label of the marker. Markers can only have labels with 1 (one) character. If it is not set, defaults to to empty &lt;code>''&lt;/code>. 
+ * @param		{Boolean}	isDraggable		&lt;b>OPTIONAL&lt;/b>, If the marker is draggable or not. If not set, defaults to &lt;code>false&lt;/code>. 
+ * @param		{Object}	anAnimation		&lt;b>OPTIONAL&lt;/b>, The animation of the marker when it is added to the map. If not set, defaults to &lt;code>google.maps.Animation.DROP&lt;/code>. 
+ * @returns 	{Object}	Returns the created marker object. 
+ */
+function createMarker(aPosition, aTitle, aLabel, isDraggable, anAnimation) {
+
+	let theLabel = (typeof aLabel != 'undefined' &amp;&amp; aLabel != null &amp;&amp; aLabel.length === 1 ? aLabel : '');
+	let drag = (typeof isDraggable === 'boolean' &amp;&amp; isDraggable != null ? isDraggable : false);
+	let theAnimation = (typeof anAnimation != 'undefined' &amp;&amp; anAnimation != null ? anAnimation : google.maps.Animation.DROP);
+
+	return new google.maps.Marker({
+		position: aPosition,
+		map: map,
+		draggable: drag,
+		animation: theAnimation,
+		label: theLabel,
+		title: aTitle
+	});
+}
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MarkerLabelLib.html">MarkerLabelLib</a></li><li><a href="MarkerTracker.html">MarkerTracker</a></li><li><a href="PrivateNameSpace.html">PrivateNameSpace</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AUSTRALIA_LOC">AUSTRALIA_LOC</a></li><li><a href="global.html#createMarker">createMarker</a></li><li><a href="global.html#deleteAllMarkers">deleteAllMarkers</a></li><li><a href="global.html#hideAllMarkers">hideAllMarkers</a></li><li><a href="global.html#INITIAL_ZOOM">INITIAL_ZOOM</a></li><li><a href="global.html#initMap">initMap</a></li><li><a href="global.html#initSearchBox">initSearchBox</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#markerLabels">markerLabels</a></li><li><a href="global.html#markerLib">markerLib</a></li><li><a href="global.html#showAllMarkers">showAllMarkers</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jun 28 2016 13:59:15 GMT+0000 (UTC)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

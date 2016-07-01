@@ -1,0 +1,16 @@
+{
+  "name": "exercise_4.2",
+  "version": "1.0.0",
+  "description": "Extend previous app to add a search box to lookup addresses and display (all) results as markers on the map. Hovering each marker should show the formatted address.",
+  "main": "index.js",
+  "scripts": {
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js *.js",
+    "watch": "gulp watch"
+  },
+  "author": "Pedro Miguel Pereira Serrano Martins",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc": "^3.4.0"
+  }
+}

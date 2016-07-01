@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: example.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: example.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @author  Pedro Miguel Pereira Serrano Martins
+ * @version 1.0.0
+ * @date    30 June, 2016
+ */
+
+'use strict';
+
+/*global google*/
+/*global MarkerTracker*/
+/*global MarkerLabelLib*/
+/*global PathDrawer*/
+
+/**
+ * @global 
+ * @description The global map varaible representing the map instance of this demo.
+ */
+var map;
+
+/**
+ * @global 
+ * @description Instance of the MarkerTracker library, needed to track markers and their statuses.
+ */
+var markerLib;
+
+/**
+ * @global 
+ * @description Instance of the MarkerLabelLib, needed to keep track of the labels being using in each marker.
+ */
+var markerLabels;
+
+/**
+ * @global 
+ * @description Instance of the PathDrawerLib, needed to keep track of the drawned paths in order to keep recycling them.
+ */
+var pathDrawer;
+
+/**
+ * @const
+ * @type		{Number}
+ * @default
+ * @description	Default zoom level used in in the start of the map.
+ */
+const INITIAL_ZOOM = 7;
+
+/**
+ * @const
+ * @type		{Location}
+ * @default
+ * @description	Portugal's location in latitude and longitude.
+ */
+const PORTUGAL_LOC = {
+	lat: 39.39987199999999,
+	lng: -8.224454
+};
+
+/**
+ * @function initMap
+ * @description Initializes the and the libraries.
+ */
+function initMap() {
+	markerLib = new MarkerTracker();
+	markerLabels = new MarkerLabelLib(MarkerLabelLib.GREEK_ALPHABET, true);
+
+	map = new google.maps.Map(document.getElementById('map'), {
+		zoom: INITIAL_ZOOM,
+		center: PORTUGAL_LOC
+	});
+
+	pathDrawer = new PathDrawer({
+		map: map,
+		pruneLevel: PathDrawer.MODERATE_PRUNNING
+	});
+
+	initSearchBoxes(map);
+}
+
+//searchbox
+/**
+ * @function	initSearchBox
+ * @description Function containing the initilization of the searchbox together with the listeners it uses.
+ */
+function initSearchBoxes() {
+	// Create the search box and link it to the UI element.
+	let startInput = document.getElementById('start-input');
+	let startSearchBox = new google.maps.places.SearchBox(startInput);
+
+	let endInput = document.getElementById('end-input');
+	let endSearchBox = new google.maps.places.SearchBox(endInput);
+
+	let directionsService = new google.maps.DirectionsService();
+
+	// Bias the SearchBox results towards current map's viewport.
+	map.addListener('bounds_changed', function() {
+		startSearchBox.setBounds(map.getBounds());
+		endSearchBox.setBounds(map.getBounds());
+	});
+
+	startSearchBox.addListener('places_changed', function() {
+		pathDrawer.hidePaths();
+		deleteAllMarkers();
+
+		let places = startSearchBox.getPlaces();
+		if (places.length == 0) {
+			return;
+		}
+
+		// For each place, get the icon, name and location.
+		let bounds = new google.maps.LatLngBounds();
+		places.forEach(function(place) {
+
+			// // Create a marker for each place.
+			let newMarker = createMarker(place.geometry.location, place.name, markerLabels.nextSymbol(), true);
+			markerLib.trackMarker(newMarker);
+
+			newMarker.setMap(map);
+
+			if (place.geometry.viewport) {
+				// Only geocodes have viewport.
+				bounds.union(place.geometry.viewport);
+			}
+			else {
+				bounds.extend(place.geometry.location);
+			}
+		});
+		map.fitBounds(bounds);
+	});
+
+	endSearchBox.addListener('places_changed', function() {
+		pathDrawer.hidePaths();
+		deleteAllMarkers();
+
+		let request = {
+			origin: startInput.value,
+			destination: endInput.value,
+			travelMode: google.maps.TravelMode.DRIVING,
+			unitSystem: google.maps.UnitSystem.METRIC,
+			provideRouteAlternatives: true,
+			avoidHighways: false,
+			avoidTolls: false
+		};
+
+		directionsService.route(request, function(result, status) {
+			if (status == google.maps.DirectionsStatus.OK)
+				pathDrawer.drawPaths(result);
+		});
+	});
+}
+
+//Auxiliary functions 
+
+/**
+ * @function	createMarker
+ * @description Creates and returns a marker with the given parameters. Depends on the global variable &lt;code>map&lt;/code>.
+ * @param		{Location}	aPosition		The Position object (containing a &lt;code>lat&lt;/code> and &lt;code>lng&lt;/code> properties) with the coordinates of the marker.
+ * @param		{String}	aTitle			The title of the marker. 
+ * @param		{Char}		aLabel			&lt;b>OPTIONAL&lt;/b>, The label of the marker. Markers can only have labels with 1 (one) character. If it is not set, defaults to to empty &lt;code>''&lt;/code>. 
+ * @param		{Boolean}	isDraggable		&lt;b>OPTIONAL&lt;/b>, If the marker is draggable or not. If not set, defaults to &lt;code>false&lt;/code>. 
+ * @param		{Object}	anAnimation		&lt;b>OPTIONAL&lt;/b>, The animation of the marker when it is added to the map. If not set, defaults to &lt;code>google.maps.Animation.DROP&lt;/code>. 
+ * @returns 	{Object}	Returns the created marker object. 
+ */
+function createMarker(aPosition, aTitle, aLabel, isDraggable, anAnimation) {
+
+	let theLabel = (typeof aLabel != 'undefined' &amp;&amp; aLabel != null &amp;&amp; aLabel.length === 1 ? aLabel : '');
+	let drag = (typeof isDraggable === 'boolean' &amp;&amp; isDraggable != null ? isDraggable : false);
+	let theAnimation = (typeof anAnimation != 'undefined' &amp;&amp; anAnimation != null ? anAnimation : google.maps.Animation.DROP);
+
+	return new google.maps.Marker({
+		position: aPosition,
+		map: map,
+		draggable: drag,
+		animation: theAnimation,
+		label: theLabel,
+		title: aTitle
+	});
+}
+
+/**
+ * @function	deleteAllMarkers
+ * @description	Deletes all the markers currently being tracked by MarkerTracker from the maps they are in. Activated once the "Delete Markers" button is clicked. 
+ */
+function deleteAllMarkers() {
+	markerLib.reset();
+	markerLabels.reset(true);
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MarkerLabelLib.html">MarkerLabelLib</a></li><li><a href="MarkerTracker.html">MarkerTracker</a></li><li><a href="PathDrawer.html">PathDrawer</a></li><li><a href="PrivateNameSpace.html">PrivateNameSpace</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createMarker">createMarker</a></li><li><a href="global.html#deleteAllMarkers">deleteAllMarkers</a></li><li><a href="global.html#INITIAL_ZOOM">INITIAL_ZOOM</a></li><li><a href="global.html#initMap">initMap</a></li><li><a href="global.html#initSearchBox">initSearchBox</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#markerLabels">markerLabels</a></li><li><a href="global.html#markerLib">markerLib</a></li><li><a href="global.html#pathDrawer">pathDrawer</a></li><li><a href="global.html#PORTUGAL_LOC">PORTUGAL_LOC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 01 2016 10:07:34 GMT+0000 (UTC)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

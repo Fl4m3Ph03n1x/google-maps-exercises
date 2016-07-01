@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: MarkerLabelLib.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: MarkerLabelLib.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @author  Pedro Miguel Pereira Serrano Martins
+ * @version 1.0.1
+ * @date    30 May, 2016
+ */
+
+'use strict';
+
+/*global PrivateNameSpace*/
+
+/**
+ * @clas MarkerLabelLib
+ * @classdesc Used to represent and manage labels for the markers in Google Maps JavaScript API. This library has a set of common alphabets you can use, stored in UTF-8 format, so it is advised that if you use this script to have proper UTF-8 support in your code.
+ * @extends PrivateNameSpace
+ */
+class MarkerLabelLib extends PrivateNameSpace{
+    
+    /**
+     * @constructs  MarkerLabelLib
+     * @description Creates a MarkerLabelLib object with the given alphabet and a Boolean to decide if the library should reuse deleted labels or not. The user can either provide one the alphabets present in this library, or something else, as long as it is an array of charaters.
+     * @param       {Array}     alphabet        Array containing the alphabet to be used. 
+     * @param       {Boolean}   recycleSymbols  Defines if the library should reuse deleted labels or not.
+     */
+    constructor(alphabet, recycleSymbols) {
+        super();
+        super.internal(this).alphabet = alphabet;
+        super.internal(this).index = 0;
+        super.internal(this).recyclingEnabled = recycleSymbols;
+        super.internal(this).recycleBin = [];
+    }
+
+    /**
+     * @description Frees the given symbol (aka label), putting it in the reusable list of symbols. If you opted by not recycling the symbols you should not need to use this method, but if you use it be aware that the library will always track the symbols you free in case later on you change your mind and decide to enable the symbol recycling feature.
+     * @param       {Char}  symbol  The symbol to be recycled.
+     */
+    recycleSymbol(symbol) {
+        super.internal(this).recycleBin.push(symbol);
+    }
+
+    /**
+     * @description Returns the next symbol available in the collection. If symbol recycling is enabled, it will priotize the last symbol put in the recycling bin instead, until all deleted symbols are reused. Once it empties the recycle bin, it starts using the collection again where it left it the last time.
+     * @returns     {String}    The next character (aka, symbol, label) of the collection, or from the recycle bin if the recycling feature is enabled.
+     */
+    nextSymbol() {
+        if (super.internal(this).recyclingEnabled &amp;&amp; super.internal(this).recycleBin.length != 0)
+            return super.internal(this).recycleBin.pop() + "";
+        else
+            return super.internal(this).alphabet[super.internal(this).index++ % super.internal(this).alphabet.length] + "";
+    }
+
+    /**
+     * @description Resets the collection to the first symbol and if &lt;code>emptyRecycleBin&lt;/code> is set to &lt;code>true&lt;/code> it empties the recycle bin, othwerwise it does not affect it.
+     * @param       {Boolean}   emptyRecycleBin If &lt;code>true&lt;/code>, empties the recycle bin, otherwise keeps it intact.
+     * @see         nextSymbol
+     */
+    reset(emptyRecycleBin) {
+        super.internal(this).index = 0;
+
+        if (emptyRecycleBin)
+            this.emptyRecycleBin();
+    }
+
+    /**
+     * @description Empties the list of recorded deleted symbols.
+     */
+    emptyRecycleBin() {
+        super.internal(this).recycleBin = [];
+    }
+
+    /**
+     * @description Enables or disables the recycling of symbols depending on the given value of &lt;code>state&lt;/code>. Note that disabling the recycling of symbols will not empty the recycle bin.
+     * @param       {Boolean}   state   If &lt;code>true&lt;/code>, enables recycling, if &lt;code>false&lt;/code>, disables it.
+     */
+    set setRecycling(state) {
+        super.internal(this).recyclingEnabled = state;
+    }
+
+    /**
+     * @description Returns the current state of the recycling feature.
+     * @returns     {Boolean}   The current state of the recycling feature.
+     */
+    get isRecyclingOn() {
+        return super.internal(this).recyclingEnabled;
+    }
+
+    /**
+     * @static
+     * @readonly
+     * @description Characters of the basic latin alphabet in upper case, enconded in UTF-8.
+     * @see         {@link http://www.utf8-chartable.de/unicode-utf8-table.pl|chartable}
+     */
+    static get LATIN_ALPHABET() {
+        return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    }
+
+    /**
+     * @static
+     * @readonly
+     * @description Characters of the arabic numeric alphabet enconded in UTF-8.
+     * @see         {@link http://www.utf8-chartable.de/unicode-utf8-table.pl|chartable}
+     */
+    static get NUMERIC_ALPHABET() {
+        return ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    }
+
+    /**
+     * @static
+     * @readonly
+     * @description Characters of the basic arabic alphabet enconded in UTF-8.
+     * @see         {@link http://www.utf8-chartable.de/unicode-utf8-table.pl|chartable}
+     */
+    static get ARABIC_ALPHABET() {
+        return ['ؠ', 'ء', 'آ', 'أ', 'ؤ', 'إ', 'ئ', 'ا', 'ب', 'ة', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ػ', 'ؼ', 'ؽ', 'ؾ', 'ؿ', 'ـ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ى', 'ي'];
+    }
+
+    /**
+     * @static
+     * @readonly
+     * @description Characters of the basic greek alphabet enconded in UTF-8.
+     * @see         {@link http://www.utf8-chartable.de/unicode-utf8-table.pl|chartable}
+     */
+    static get GREEK_ALPHABET() {
+        return ['Α', 'Β', 'Γ', 'Δ', 'Ε', 'Ζ', 'Η', 'Θ', 'Ι', 'Κ', 'Λ', 'Μ', 'Ν', 'Ξ', 'Ο', 'Π', 'Ρ', '΢', 'Σ', 'Τ', 'Υ', 'Φ', 'Χ', 'Ψ', 'Ω'];
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MarkerLabelLib.html">MarkerLabelLib</a></li><li><a href="MarkerTracker.html">MarkerTracker</a></li><li><a href="PathDrawer.html">PathDrawer</a></li><li><a href="PrivateNameSpace.html">PrivateNameSpace</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createMarker">createMarker</a></li><li><a href="global.html#deleteAllMarkers">deleteAllMarkers</a></li><li><a href="global.html#INITIAL_ZOOM">INITIAL_ZOOM</a></li><li><a href="global.html#initMap">initMap</a></li><li><a href="global.html#initSearchBox">initSearchBox</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#markerLabels">markerLabels</a></li><li><a href="global.html#markerLib">markerLib</a></li><li><a href="global.html#pathDrawer">pathDrawer</a></li><li><a href="global.html#PORTUGAL_LOC">PORTUGAL_LOC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 01 2016 10:07:34 GMT+0000 (UTC)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
